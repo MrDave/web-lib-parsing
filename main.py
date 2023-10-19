@@ -37,7 +37,7 @@ def main():
     env = Env()
     env.read_env()
 
-    media_folder = env.str("MEDIA_FOLDER")
+    media_folder = env.str("MEDIA_FOLDER", default="books")
     Path(media_folder).mkdir(exist_ok=True, parents=True)
 
     # for book_id in range(1, 11):
