@@ -2,19 +2,31 @@ import requests
 from environs import Env
 from pathlib import Path
 from bs4 import BeautifulSoup
+from pathvalidate import sanitize_filename, is_valid_filename
 
 
-def download_book(path, book_id):
-    url = "https://tululu.org/txt.php"
-    params = {
-        "id": book_id
-    }
-    response = requests.get(url, params=params)
+def download_txt(url, filename, media_folder):
+    """Download text files.
+
+    Args:
+        url (str): url of a file to download.
+        filename (str): file name to save the file as (without ".txt" extension).
+        media_folder: folder to save the file to.
+
+    Returns:
+        str: filepath of the saved file.
+    """
+    response = requests.get(url)
     response.raise_for_status()
     check_for_redirect(response)
+    if not is_valid_filename(filename):
+        filename = sanitize_filename(filename)
 
+    path = Path(media_folder).joinpath(f"{filename}.txt")
     with open(path, "wb") as file:
         file.write(response.content)
+
+    return path
 
 
 def check_for_redirect(response):
