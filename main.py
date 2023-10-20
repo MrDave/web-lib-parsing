@@ -38,11 +38,13 @@ def parse_book_page(book_id: int):
     url = f"http://tululu.org/b{book_id}/"
     response = requests.get(url)
     response.raise_for_status()
+    check_for_redirect(response)
     soup = BeautifulSoup(response.text, "lxml")
     title_tag = soup.find("body").find("h1")
     book_title = title_tag.text.split("::")[0].strip()
     book_author = title_tag.find("a").text
-    return book_title, book_author
+    book_link = f"https://tululu.org/txt.php?id={book_id}"
+    return book_title, book_author, book_link
 
 
 def main():
@@ -52,14 +54,13 @@ def main():
     media_folder = env.str("MEDIA_FOLDER", default="books")
     Path(media_folder).mkdir(exist_ok=True, parents=True)
 
-    # for book_id in range(1, 11):
-    #     path = Path(media_folder).joinpath(f"book_{book_id}.txt")
-    #     try:
-    #         download_book(path, book_id)
-    #     except requests.HTTPError:
-    #         continue
-    title, author = parse_book_page(1)
-    print(f"Название: {title}\nАвтор: {author}")
+    for book_id in range(1, 11):
+        try:
+            title, author, link = parse_book_page(book_id)
+            filename = f"{book_id}. {title}"
+            download_txt(link, filename, media_folder)
+        except requests.HTTPError:
+            continue
 
 
 if __name__ == '__main__':
