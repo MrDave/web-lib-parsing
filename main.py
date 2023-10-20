@@ -44,7 +44,9 @@ def parse_book_page(book_id: int):
     book_title = title_tag.text.split("::")[0].strip()
     book_author = title_tag.find("a").text
     book_link = f"https://tululu.org/txt.php?id={book_id}"
-    return book_title, book_author, book_link
+    image_tag = soup.find(class_="bookimage").find("img")
+    image_link = f"https://tululu.org{image_tag["src"]}"
+    return book_title, book_author, book_link, image_link
 
 
 def main():
@@ -56,9 +58,9 @@ def main():
 
     for book_id in range(1, 11):
         try:
-            title, author, link = parse_book_page(book_id)
+            title, author, book_link, image_link = parse_book_page(book_id)
             filename = f"{book_id}. {title}"
-            download_txt(link, filename, media_folder)
+            download_txt(book_link, filename, media_folder)
         except requests.HTTPError:
             continue
 
