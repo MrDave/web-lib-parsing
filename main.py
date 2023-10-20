@@ -3,6 +3,7 @@ from environs import Env
 from pathlib import Path
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename, is_valid_filename
+from urllib import parse
 
 
 def download_txt(url, filename, media_folder):
@@ -11,7 +12,7 @@ def download_txt(url, filename, media_folder):
     Args:
         url (str): url of a file to download.
         filename (str): file name to save the file as (without ".txt" extension).
-        media_folder: folder to save the file to.
+        media_folder (str): folder to save the file to.
 
     Returns:
         str: filepath of the saved file.
@@ -49,18 +50,45 @@ def parse_book_page(book_id: int):
     return book_title, book_author, book_link, image_link
 
 
+def download_image(image_link, image_folder):
+    """Download image from url link
+
+    Args:
+        image_link (str): url link to an image.
+        image_folder (str): folder to save the image to.
+
+    Returns:
+        str: filepath of the saved image.
+    """
+    parsed_link = parse.urlsplit(image_link)
+    image_name = parse.unquote(parsed_link.path.split("/")[-1])
+    if not is_valid_filename(image_name):
+        image_name = sanitize_filename(image_name)
+
+    response = requests.get(image_link)
+    response.raise_for_status()
+    path = Path(image_folder).joinpath(image_name)
+    with open(path, "wb") as file:
+        file.write(response.content)
+
+    return path
+
+
 def main():
     env = Env()
     env.read_env()
 
     media_folder = env.str("MEDIA_FOLDER", default="books")
+    image_folder = env.str("IMAGE_FOLDER", default="images")
     Path(media_folder).mkdir(exist_ok=True, parents=True)
+    Path(image_folder).mkdir(exist_ok=True, parents=True)
 
     for book_id in range(1, 11):
         try:
             title, author, book_link, image_link = parse_book_page(book_id)
             filename = f"{book_id}. {title}"
             download_txt(book_link, filename, media_folder)
+            download_image(image_link, image_folder)
         except requests.HTTPError:
             continue
 
