@@ -4,6 +4,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename, is_valid_filename
 from urllib import parse
+from argparse import ArgumentParser
 
 
 def download_txt(url, filename, media_folder):
@@ -88,18 +89,25 @@ def main():
     env = Env()
     env.read_env()
 
+    parser = ArgumentParser(
+        description="Download books from tululu.org website in .txt format. Book IDs start at \"1\"."
+    )
+    parser.add_argument("start_id", type=int, help="ID of the first book to download")
+    parser.add_argument("end_id", type=int, help="ID of the last book to download")
+
+    args = parser.parse_args()
+
     media_folder = env.str("MEDIA_FOLDER", default="books")
     image_folder = env.str("IMAGE_FOLDER", default="images")
     Path(media_folder).mkdir(exist_ok=True, parents=True)
     Path(image_folder).mkdir(exist_ok=True, parents=True)
 
-    for book_id in range(1, 11):
+    for book_id in range(args.start_id, args.end_id + 1):
         try:
-            title, author, book_link, image_link, comments = parse_book_page(book_id)
+            title, author, book_link, image_link, comments, genres = parse_book_page(book_id)
             filename = f"{book_id}. {title}"
             download_txt(book_link, filename, media_folder)
             download_image(image_link, image_folder)
-            print(comments)
         except requests.HTTPError:
             continue
 
