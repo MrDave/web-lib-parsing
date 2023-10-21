@@ -37,6 +37,7 @@ def check_for_redirect(response):
 
 
 def parse_book_page(book_id: int):
+    """Parse book webpage for book info, comments and download/cover links."""
     url = f"http://tululu.org/b{book_id}/"
     response = requests.get(url)
     response.raise_for_status()
