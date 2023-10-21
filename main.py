@@ -108,6 +108,15 @@ def main():
             filename = f"{book_id}. {title}"
             download_txt(book_link, filename, book_folder)
             download_image(image_link, image_folder)
+            print(
+                f"Title: {title}\n"
+                f"Author: {author}\n"
+                f"Genre(s): {genres}\n"
+            )
+            if comments:
+                print("Comment(s):")
+                for comment in comments:
+                    print(f"> {comment}\n")
         except requests.HTTPError:
             continue
 
