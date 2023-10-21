@@ -54,7 +54,10 @@ def parse_book_page(book_id: int):
     for tag in comment_tags:
         comments.append(tag.find("span").text)
 
-    return book_title, book_author, book_link, image_link, comments
+    genre_tags = soup.find("span", class_="d_book").find_all("a")
+    genres = [tag.text for tag in genre_tags]
+
+    return book_title, book_author, book_link, image_link, comments, genres
 
 
 def download_image(image_link, image_folder):
