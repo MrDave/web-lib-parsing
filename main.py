@@ -97,16 +97,16 @@ def main():
 
     args = parser.parse_args()
 
-    media_folder = env.str("MEDIA_FOLDER", default="books")
+    book_folder = env.str("BOOK_FOLDER", default="books")
     image_folder = env.str("IMAGE_FOLDER", default="images")
-    Path(media_folder).mkdir(exist_ok=True, parents=True)
+    Path(book_folder).mkdir(exist_ok=True, parents=True)
     Path(image_folder).mkdir(exist_ok=True, parents=True)
 
     for book_id in range(args.start_id, args.end_id + 1):
         try:
             title, author, book_link, image_link, comments, genres = parse_book_page(book_id)
             filename = f"{book_id}. {title}"
-            download_txt(book_link, filename, media_folder)
+            download_txt(book_link, filename, book_folder)
             download_image(image_link, image_folder)
         except requests.HTTPError:
             continue
