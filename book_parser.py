@@ -52,9 +52,7 @@ def parse_book_page(book_id: int):
     image_link = f"https://tululu.org{image_tag["src"]}"
 
     comment_tags = soup.find_all(class_="texts")
-    comments = []
-    for tag in comment_tags:
-        comments.append(tag.find("span").text)
+    comments = [tag.find("span").text for tag in comment_tags]
 
     genre_tags = soup.find("span", class_="d_book").find_all("a")
     genres = [tag.text for tag in genre_tags]
