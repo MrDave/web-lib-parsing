@@ -5,8 +5,27 @@ from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename, is_valid_filename
 from urllib import parse
 from argparse import ArgumentParser
+from time import sleep
+import logging
+import functools
 
 
+def retry_on_failure(max_retries=5, exceptions=(Exception,)):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for retry_attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except exceptions as e:
+                    logging.warning(f"Failed to execute {func.__name__}. Retrying in {4 ** retry_attempt}s. Error: {e}")
+                    sleep(4 ** retry_attempt)
+            logging.error(f"Failed to execute {func.__name__} after {max_retries} attempts.")
+        return wrapper
+    return decorator
+
+
+@retry_on_failure(exceptions=(requests.ConnectionError, requests.Timeout))
 def download_txt(url, filename, media_folder):
     """Download text files.
 
@@ -36,6 +55,7 @@ def check_for_redirect(response):
         raise requests.HTTPError
 
 
+@retry_on_failure(exceptions=(requests.ConnectionError, requests.Timeout))
 def parse_book_page(book_id: int):
     """Parse book webpage for book info, comments and download/cover links."""
     url = f"http://tululu.org/b{book_id}/"
@@ -60,6 +80,7 @@ def parse_book_page(book_id: int):
     return book_title, book_author, book_link, image_link, comments, genres
 
 
+@retry_on_failure(exceptions=(requests.ConnectionError, requests.Timeout))
 def download_image(image_link, image_folder):
     """Download image from url link
 
