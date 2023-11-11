@@ -116,6 +116,7 @@ def download_image(image_link, image_folder):
 def main():
     env = Env()
     env.read_env()
+    logging.basicConfig(level=logging.INFO)
 
     parser = ArgumentParser(
         description="Download books from tululu.org website in .txt format. Book IDs start at \"1\"."
@@ -147,6 +148,7 @@ def main():
                 for comment in comments:
                     print(f"> {comment}\n")
         except requests.HTTPError:
+            logging.info(f"Book with ID {book_id} not found.\n")
             continue
 
 
