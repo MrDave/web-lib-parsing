@@ -55,13 +55,13 @@ def download_txt(book_id, filename, media_folder):
 
 
 def check_for_redirect(response):
-    if response.history and response.url == "https://tululu.org/":
+    if response.history:
         raise requests.HTTPError
 
 
 @retry_on_failure(exceptions=(requests.ConnectionError, requests.Timeout))
 def fetch_book_page(book_id: int):
-    url = f"http://tululu.org/b{book_id}/"
+    url = f"https://tululu.org/b{book_id}/"
     response = requests.get(url)
     response.raise_for_status()
     check_for_redirect(response)
