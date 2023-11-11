@@ -77,7 +77,7 @@ def parse_book_page(response):
     book_author = title_tag.find("a").text
 
     image_tag = soup.find(class_="bookimage").find("img")
-    image_link = f"https://tululu.org{image_tag["src"]}"
+    image_link = parse.urljoin(response.url, image_tag["src"])
 
     comment_tags = soup.find_all(class_="texts")
     comments = [tag.find("span").text for tag in comment_tags]
