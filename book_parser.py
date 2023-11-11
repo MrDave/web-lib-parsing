@@ -56,12 +56,17 @@ def check_for_redirect(response):
 
 
 @retry_on_failure(exceptions=(requests.ConnectionError, requests.Timeout))
-def parse_book_page(book_id: int):
-    """Parse book webpage for book info, comments and download/cover links."""
+def fetch_book_page(book_id: int):
     url = f"http://tululu.org/b{book_id}/"
     response = requests.get(url)
     response.raise_for_status()
     check_for_redirect(response)
+    return response
+
+
+def parse_book_page(response, book_id: int):
+    """Parse book webpage for book info, comments and download/cover links."""
+
     soup = BeautifulSoup(response.text, "lxml")
     title_tag = soup.find("body").find("h1")
     book_title = title_tag.text.split("::")[0].strip()
@@ -124,7 +129,8 @@ def main():
 
     for book_id in range(args.start_id, args.end_id + 1):
         try:
-            title, author, book_link, image_link, comments, genres = parse_book_page(book_id)
+            book_page = fetch_book_page(book_id)
+            title, author, book_link, image_link, comments, genres = parse_book_page(book_page, book_id)
             filename = f"{book_id}. {title}"
             download_txt(book_link, filename, book_folder)
             download_image(image_link, image_folder)
